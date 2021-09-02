@@ -14,7 +14,7 @@ head(siteCov)
 names(Daily_Cov)
 head(Daily_Cov[[1]])
 
-#### Fiting models for abundance and predicting alpha diversity ####
+#### Fitting models for abundance and predicting alpha diversity ####
 
 ## If *dredge = TRUE* only the best model will be selected
 

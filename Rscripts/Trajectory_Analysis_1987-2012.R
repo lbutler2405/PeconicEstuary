@@ -210,6 +210,7 @@ trajectoryPlot(mMDS.f$conf, sites.f, survey.f, lwd = 1, traj.colors = RColorBrew
 legend("bottomright", col=RColorBrewer::brewer.pal(5, "Accent"), 
              legend=paste("S", seq(1:5)), bty="n", lty=1, lwd = 1, seg.len = 0.5, pt.cex = 1, cex = 1.2)
 
+
 #### Trajectory Analysis using average for each year, i.e. for the whole peconic ####
 
 yearly <- NULL
@@ -242,8 +243,6 @@ print("mMDS Performed")
 par(cex = 0.8, cex.axis = 1.2, cex.lab = 1.2)
 pdf("D:/Stony Brook/Peconic Estuary/Peconic_Project/Analysis/Plots/Trajectory_Analysis_1987-2012/Annual_combined/Stations_Combined_Bray.pdf", paper = "a4r",
     width = 10, height = 10)
-
-
 trajectoryPCoA(dist.y, sites.y, survey.y, traj.colors = "grey", survey.labels = T, length = 0.2) # if using BRAY-CURTIS transformation
 
 #trajectoryPlot(dist.y, sites.y, survey.y, lwd = 1, traj.colors = "grey", survey.labels = T, length = 0.2) # if using mMDS
