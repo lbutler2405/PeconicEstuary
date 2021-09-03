@@ -99,11 +99,11 @@ head(spp.occupancy)
 spp.occupancy[is.na(spp.occupancy)] <- 0
 head(spp.occupancy)
 
-# 2. Combine env. data with spp.data
+# 2. Combine env. data with spp.data ####
 data.all <- cbind(spp.occupancy, env.var)
 head(data.all)
 
-# 3. Filter by year and take 1 instance site from each site
+# 3. Filter by year and take 1 instance site from each site ####
 
 x.for <- NULL
 xx <- NULL
@@ -166,7 +166,7 @@ for (i in years){
   write.csv(env, paste('D:/Stony Brook/Peconic Estuary/PeconicEstuary/Example_Data/Occupancy/env_vars/first_quad_per_year/Year', i, '.csv'))
 }
 
-## Sort out dataframes for occupancy model - ANCHOVIES ####
+#### Sort out dataframes for occupancy model - ANCHOVIES ####
 
 y.dat <- anch.yrs[,-1] 
 head(y.dat) # has NAs
