@@ -140,9 +140,8 @@ View(temp.1987[41:61])
 
 pivot.table <- pivot_longer(x.for, cols = 1:41)
 
-anch.1987 <- temp %>% filter (Year == 1987) %>% filter(name == "anchovy")
+#### Use anchovies as an example ####
 
-# Use anchovies as an example # 
 anch.yrs <- data.frame(index = 1:77)
 head(anch.yrs)
 
@@ -379,88 +378,86 @@ EBUP <- bup(re, stat="mean")
 CI <- confint(re, level=0.9)
 rbind(PAO = c(Estimate = sum(EBUP), colSums(CI)) / 237)
 
-#################3
+#### Model Evaluation ####
 
-## Use anchovies as an example ##
-anch <- NULL
-anch <- spp.occupancy[,1:5]
-head(anch)
-
-# 1987
-anch.1987 <- anch %>% filter(Year == 1987)
-anch.1987 <- anch.1987 %>% arrange(Station)
-anch.1987 <- anch.1987[,-1]
-#date <- anch.1987$Date
-#date <- as.character(date)
-#date <- as.Date(date, format = "%d/%m/%Y")
-#anch.1987$Date <- date
-head(anch.1987)
-
-View(anch.1987)
-table(anch.1987$Season)
-
-wide = anch.1987 %>% 
-  spread(Station, anchovy)
-
-View(wide)
-
-#### Use total per year ###
-
-tpy <- read.csv("D:/Stony Brook/Peconic Estuary/Peconic_Project/Data/Modified_Data/Total_per_site.csv")
-head(tpy)
-yr.st <- tpy[,1:2]
-tpy <- tpy[,-1:-2]
-tpy <- tpy %>% mutate_if(is.numeric, ~1 * (. != 0))
-tpy <- cbind(yr.st, tpy)
-head(tpy)
-
-anch.tpy <- tpy[,1:3]
-anch.tpy$anchovy[anch.tpy$anchovy > 0] <- 1 
-head(anch.tpy)
-
-wide = anch.tpy %>% 
-  spread(Station, anchovy)
-
-View(wide)
-
-#### Loop for each species using total per year #### - problem occurs due to different sampling per site per year
-
-tpy[,3:ncol(tpy)][,3:ncol(tpy) > 0] <- 1
-head(tpy)
-
-for (i in colnames(tpy[,3:ncol(tpy)])){
-  spp <- tpy[,i]
-  bind <- cbind(tpy[,1], tpy[,2], tpy[,i])
-  bind <- as.data.frame(bind)
-  colnames(bind) <- c("Year", "Station", paste(i))
-  wide.i <- bind %>% 
-    spread(Station, i)
-  write.csv(wide.i, paste("D:/Stony Brook/Peconic Estuary/PeconicEstuary/Example_Data/Occupancy/", i, ".csv"))
+fitstats <- function(fm3, 
+                     method = "nonparboot") {
+  
+  observed <- getY(fm3@data)
+  expected <- fitted(fm3)
+  
+  resids <- residuals(fm3,
+                      method = "nonparboot")
+  
+  sse <- sum(resids^2,
+             na.rm = TRUE)
+  
+  chisq <- sum((observed - expected)^2 / expected,
+               na.rm = TRUE)
+  
+  freeTuke <- sum((sqrt(observed) - sqrt(expected))^2, 
+                  na.rm = TRUE)
+  
+  out <- c(SSE = sse,
+           Chisq = chisq,
+           freemanTukey = freeTuke)
+  
+  return(out)
+  
 }
 
-#### Run species occupancy model using averages for the year for each site ####
+pb <- parboot(fm3,
+              fitstats,
+              nsim = 1000,
+              report = TRUE,
+              method = "nonparboot")
 
-##############
+pb ## p-value greater than >> 0.05 is a good model.
 
-df.temp <- merge.df[,-62]
-env.temp <- merge.df[,1:20]
-df.temp <- df.temp[,-1:-20]
-colnames(df.temp) <- colnames(master.sheet[,2:42])
-df.temp[is.na(df.temp)] <- 0
-head(df.temp)
+par(mfrow = c(3,1))
 
-env.temp <- subset(env.temp, select = -c(StartLat, EndLat, StartLong, EndLong, Date))
-df.temp <- cbind(env.temp, df.temp)
-head(df.temp)
+plot(pb,
+     main = "",
+     xlab = c("SSE", "Chisq", "FT"))
 
-anch <- df.temp[,1:16]
-anch <- anch[,-2:-10]
-head(anch)
+#################
 
-anch <- anch %>% arrange(Station)
-head(anch)
+## Using the first two samples per quadrat per year ##
 
-anch.info <- NULL
+x.temp <- NULL
+xx.temp <- NULL
+
+for (i in years) {
+  xx.temp <- data.all %>% 
+    filter(Year == i)
+  xx.temp <- xx.temp %>% arrange(Station)
+  print(paste("Year ", i))
+  
+  for (j in stations){
+    sort.temp <- xx.temp %>% arrange(Station)
+    xy.temp <- sort.temp %>% 
+      filter(Station == j)
+    print(paste("Station ", j))
+    xy.temp <- data.frame(xy.temp)
+    xyx.temp <- xy.temp[1:2,]
+    xyx.temp$Year[is.na(xyx.temp$Year)] <- i
+    xyx.temp$Station[is.na(xyx.temp$Station)] <- j
+    x.temp <- rbind(x.temp, xyx.temp)
+  }
+}
+
+x.1987 <- x.temp %>% filter(Year==1987)
+View(x.1987[,42:ncol(x.1987)])
+
+x.1988 <- x.temp %>% filter(Year == 1988)
+View(x.1988[,42:ncol(x.1988)])
+
+x.1989 <- x.temp %>% filter(Year == 1989)
+View(x.1989[,42:ncol(x.1989)])
+
+
+
+#########
 
 #### Multi-species occupancy model using DiversityOccupancy for the full dataset ####
 
